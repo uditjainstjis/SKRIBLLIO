@@ -252,6 +252,7 @@ console.log("sahi answer mila")
 
     })
     socket.on('left',(data)=>{
+        try{
         sendWord(data.room)
         var usersData = IdAndNameStore.get(data.room)
         var users = usersData.Name
@@ -284,6 +285,10 @@ console.log("sahi answer mila")
 
         }
     }
+}catch(err){
+    console.log("zero users error maybe in the room")
+    console.log(err)
+}
     })
     socket.on("wordchose",(data)=>{
         WordChosen.set(data.room,data.option)
