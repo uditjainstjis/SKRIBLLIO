@@ -82,6 +82,7 @@ function getWords() {
 
 
 function sendWord(roomId){
+    try{
     var usersData = IdAndNameStore.get(roomId)
     const userid = usersData.id
 
@@ -100,6 +101,10 @@ function sendWord(roomId){
     io.to(roomId).emit("clear")
     console.log("Word sent!")
     NumCorrectAns.set(roomId,0)
+}catch(err){
+    console.log("number of users in room were 0 maybe is the error")
+    console.log(err)
+}
 }
 
 const IdAndNameStore = new Map()
@@ -179,7 +184,8 @@ io.on('connection',(socket)=>{
 
     });
     socket.on("drawing", (data) => {
-        io.to(data.room).emit('drawing', data);
+        // io.to(data.room).emit('drawing', data);
+        socket.broadcast.to(data.room).emit('drawing', data); 
         // const { roomId, coordinates } = data
     });
 
