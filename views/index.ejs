@@ -224,7 +224,7 @@ let isDrawing = false
 var user="user1"
 var names=document.getElementById("user")
 
-
+var todraww = 0
 function getMousePos(event) {
             const rect = c.getBoundingClientRect();
             return {
@@ -233,7 +233,10 @@ function getMousePos(event) {
             };
         }
 
+
         c.addEventListener('mousedown', (event) => {
+            if (todraww==1){
+
             isDrawing = true;
             const pos = getMousePos(event);
             ctx.beginPath();
@@ -241,17 +244,19 @@ function getMousePos(event) {
             var xx=pos.x
             var yy=pos.y
             socket.emit("clicked",{xx,yy,pointercolour,room:roomId})
+            }
         });
 
         c.addEventListener('mousemove', (event) => {
             if (isDrawing) {
+                if (todraww==1){
                 const pos = getMousePos(event);
                 ctx.lineTo(pos.x, pos.y);
                 ctx.stroke();
                 socket.emit('drawing', { x: pos.x, y: pos.y, room: roomId });
+                }
             }
         });
-
 
 c.addEventListener('mouseup',()=>{
     isDrawing = false
@@ -498,10 +503,12 @@ socket.on("len",(data)=>{
         guessword.textContent+="_ "
     }
     guesstext.textContent="Guess this word:"
+    todraww=0
 })
 socket.on("directword",(data)=>{
     guessword.textContent=data
     guesstext.textContent="Draw this word:"
+    todraww=1
 })
 var time = document.getElementById("time")
 
