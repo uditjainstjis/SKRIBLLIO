@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skribbl Clone</title>
+    <link rel="icon" href="favicon (2).ico" type="image/x-icon">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        .container {
+            display: flex;
+            /* position: absolute; */
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 50px);
+            /* margin-top: 200px; */
+        }
+        .players{
+            background-color: white;
+            width: 20%;
+            height: calc(100% - 50px);
+            margin-top: 125px;
+            border: 1px solid #000;
+        }
+
+        .chat{
+            background-color: white;
+            margin-top: 125px;
+            position: relative;
+            border: 1px solid #000;
+            width: 30%;
+            display: flex;
+            flex-direction: column; /* Stacks items from top to bottom */
+            height: 560px; /* Fixed height */
+            overflow-y: auto; /* Adds scrollbar when content overflows */
+            justify-content: flex-end; /* Start from the bottom */
+            padding-bottom: 40px; 
+        }
+        .center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* padding: 20px; */
+        }
+        .logo{
+            width: 23%; /* Adjust as per your design */
+            height: 70px; /* Adjust as per your design */
+            background-image: url('skribbl.gif');
+            background-size: cover;        
+            position: absolute;
+            z-index: 10;
+            /* margin-top: 30px; */
+            
+        }
+        canvas {
+            background-color: white;
+            border: 1px solid #000;
+            margin-bottom: 10px;
+            margin-top: 125px;
+            cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c6QAAA4ZJREFUWEe1WT1MFEEU/iYW5CLGikQjY3VGQnGhwUZKG3IhGLS6woSWjsZEqMXE5qxoSSjOxpya80JDSeU15AqjkcrFaEJFwCCFWbN7PzuzM2/mze2xCeRuefPe97733jezi0D+EgDi9BdgfO7fStf0bQwH+g2eVbYms9dXJt/GfAkIxEmazkuFYeHDIKIHlJO2YcNZFMqByeIgYaFmY3dr5M6LbsljJE9KF/IC963GwyPNHAXmCnqUM0yedC1tpgGllnNY5NhwSufCMFzPAeqSD3LSR2pOszKcRD3JjIFPRjcEAbVJ84gOgpaxhokqd1Akh7GTTJs8cQrIseEkkOk3zyPBKG8xB5B/E1Et6Lis0nMAhe1wHK3Vd5gCQI3dpRQDVQD3+yG+AWgL4MJ3QOESMYROnXpUtuzFERtAvCGl/DI3N/cncXh4eHg9io5ngfgVgJdesTbQ6qcwhVFlvAbnUdfGm9G0K+X0TLP5/u7ExMS/g4ODdPXDhQVxefn32srKkx/RcfQVMZ7x3NFdTTNvoS93a1NKuXx0dFRZXV2NGo3GqeqsVqvd3NnZkeVyuRtFxx8E4i2tDVRuPPVnHPNIDyUAJ53PnfP6m/rZ20bj1NaLCdj19fUb8/PzkwCmAFxwejI/bgWGCU+llM/b7fadSqXyy9Ji6dNMcnW73dvVavVnFEWvAbwLB9o72/tI7z0/mdfm0tLSo8XFxXtra2u/XXq5vb19a29v7/unVms/7g9WqFITw2RqmAWqBtQIrNwYAG21WvuaAuhhnIQxGCUfqczSEzTZSl+AUUtC7tNCCYhPOp3Oeb1eP8tP/MBbNkwPJgXiqbj4MPm1KAmes0pE/nFengY2ujxFH9OyB1CpmrJK75poCOzKaTnTbDaHgp/YLzgFn4fWDZTnI499E8ALcwuNZgFs9X988pL+3T6UAj3BZ7kgjDIHJQhUERc5lNBoyNJTS9zzxcg6lBllm2WJZhHStbX5xhu+s3EnaTI6UsZU9PyOnb0odA4ooZQBW6hSh0KNHV4fbQtND84GlqsGxythDyivcjkaqAR4gTNn9PvU4oIfXrnCK9zDZFffoUrYn7FUpj3sevyrCm+e8DkCGtAqoY2gUq+FSb84M6OrxgGR2XCsqVhJH498cQLz/vHgh6ABtQTmYPFHGYuFm1FOs3vyc+YaoHDuqSe2skKbEge55cD3Hx1TgkAKBXMwAAAAAElFTkSuQmCC'), auto;        }
+        .buttons {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .bar{
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            height: 50px;
+            margin-top: 75px;
+            /* margin-left: 1px; */
+            /* margin-right: 10px; */
+            
+            background-color: cornsilk;
+            position:absolute;
+
+        }
+.design{
+    cursor: pointer;
+    flex: 0 0 auto;
+    padding: 0 .35em;
+    margin: .35em;
+    font-size: 1.8em;
+    font-weight: bolder;
+    background-color: rgba(0, 0, 0, 0);
+    border: .15em solid #fff;
+    border-radius: var(--BORDER_RADIUS);
+    color: #fff;
+    transition: background-color .1s, color .1s;
+    animation: word_introduce .25s ease-in-out 0s 1 normal both;
+                
+}
+        .animated-span {
+    cursor: pointer;
+    flex: 0 0 auto;
+    padding: 0 .35em;
+    margin: 0.5em; /* Increased margin to add distance */
+    font-size: 1.8em;
+    font-weight: bolder;
+    background-color: rgba(91, 196, 232, 0);
+    border: .15em solid #c755a9;
+    border-radius: var(--BORDER_RADIUS);
+    color: black;
+    transition: background-color .1s, color .1s;
+    animation: span_introduce .25s ease-in-out forwards;
+    opacity: 0;
+    background: linear-gradient(45deg, rgb(174, 247, 219) 10%, rgb(7, 168, 227) 45%);
+}
+
+/* Animation keyframes */
+@keyframes span_introduce {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.popup {
+    position: absolute;
+    display: flex;
+    gap: 1em; /* Adds distance between flex items */
+}
+
+    </style>
+</head>
+<body style="background-image: url('back.png');">
+    <div class="logo"></div>
+
+    <div id="bar" class="bar">
+        <p style="text-align: left; position: absolute;" id="time">Time:</p>
+        <span id="guesstext">Guess this word</span>
+        <br>
+        <span id="guessword" class="guessword"></span>
+
+    </div>
+    <div class="container">
+        <div class="players" id="players"><p id="userList"></p></div>
+        
+        <div class="center">
+        <div class="popup" id="popup">
+
+        </div>
+        <div id="choices" style="position: absolute;" class="choices">
+        </div>
+            <canvas id="myCanvas" width="800" height="600"></canvas>
+            <div class="buttons" id="button">
+                <button style="color:red ;width: 80px; height: 28px;" onclick="givecolour('red')" >RED</button>
+                <button style="color:green;width: 80px; height: 28px;" onclick="givecolour('green')">GREEN</button>
+                <button style="color:blue;width: 80px; height: 28px;" onclick="givecolour('blue')">BLUE</button>
+                <button style="color:black;width: 80px; height: 28px;" onclick="givecolour('black')">BLACK</button>
+    
+            </div>
+        </div>
+        <div class="chat" id="chat">
+            <input type="text" name="" id="msg"  style="position: absolute;bottom: 0px; width: 100%; height: 30px; background-color: rgb(220, 220, 220);overflow-y: auto;" placeholder="Type your guess...">
+        </div>
+        <div>
+            
+        </div>
+
+    </div>
+    <script>
+        const roomId = '<%= roomId %>';
+        var socket = io();
+
+        // Join the room
+        socket.emit('joinRoom', roomId);
+
+        window.onload = function() {
+            window.scrollTo(0, document.body.scrollHeight);
+        };
+var myname=prompt("Enter your name")
+var c = document.getElementById('myCanvas')
+var ctx = c.getContext('2d')
+// ctx.moveTo(0,0)
+// ctx.lineTo(200,100)
+// ctx.stroke()
+// var asdf = document.createElement('button');
+//         asdf.textContent = roomId
+//         document.body.appendChild(asdf);
+
+var pointercolour = "black";
+var a=0;
+function themechange(){
+    if(a==0){
+    c.style="background-color:black";
+    a=1;
+    }else{
+        c.style="background-color:white";
+        a=0;
+    }
+}
+function givecolour(colour) {
+    console.log("givecolour function called with color:", colour); // Debugging log
+    pointercolour = colour;
+    updateDrawingColor();
+    console.log("Cursor color changed to " + pointercolour);
+}
+
+function updateDrawingColor() {
+    console.log("updateDrawingColor function called with color:", pointercolour); // Debugging log
+    ctx.strokeStyle = pointercolour; // Update the drawing color
+}
+
+function del(){
+    ctx.clearRect(0,0,c.width,c.height)
+    socket.emit("clear",{room: roomId})
+}
+
+updateDrawingColor();
+
+
+
+let isDrawing = false
+// var user=prompt("naam bta bhaiy apna")
+var user="user1"
+var names=document.getElementById("user")
+
+
+function getMousePos(event) {
+            const rect = c.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left+20,
+                y: event.clientY - rect.top+17
+            };
+        }
+
+        c.addEventListener('mousedown', (event) => {
+            isDrawing = true;
+            const pos = getMousePos(event);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            var xx=pos.x
+            var yy=pos.y
+            socket.emit("clicked",{xx,yy,pointercolour,room:roomId})
+        });
+
+        c.addEventListener('mousemove', (event) => {
+            if (isDrawing) {
+                const pos = getMousePos(event);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                socket.emit('drawing', { x: pos.x, y: pos.y, room: roomId });
+            }
+        });
+
+
+c.addEventListener('mouseup',()=>{
+    isDrawing = false
+})
+
+c.addEventListener('mouseleave',()=>{
+    isDrawing = false
+})
+
+socket.on('clicked',(data)=>{
+    ctx.beginPath()
+    ctx.moveTo(data.xx,data.yy)
+    pointercolour=data.pointercolour;
+    updateDrawingColor();
+})
+socket.on("loadDrawing", (data) => {
+    if (data.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(data[0].xx, data[0].yy); // Start from the first point
+        data.forEach((point, index) => {
+            if (index > 0) {
+                ctx.lineTo(point.xx, point.yy); // Draw lines to each subsequent point
+                ctx.strokeStyle = point.pointercolour; // Set the color for each segment
+                ctx.stroke();
+            }
+        });
+    }
+});
+socket.on('drawing', (data) => {
+    // ctx.moveTo(data.x,data.y)
+    ctx.lineTo(data.x, data.y);
+    ctx.stroke();
+});
+socket.on("clear",(data)=>{
+    console.log(data)
+    ctx.clearRect(0,0,c.width,c.height)
+    console.log("clear clear clear")
+})
+
+
+
+
+
+var choices = document.getElementById("choices")
+
+function showChoices(options) {
+    var choice1 = document.createElement("button");
+    var choice2 = document.createElement("button");
+    var choice3 = document.createElement("button");
+    var ch = document.createElement("span");
+    var screen = document.createElement("div");
+    
+    screen.style = "background:grey; width:800px;height:600px;margin-top:95px;position:relative;";
+    screen.innerHTML = "";
+    
+    ch.innerHTML = "Select a word";
+    ch.style = "position:absolute; top:300px; left:250px;font-size:40px;color:white;border: 4px solid magenta";
+    
+    choice1.innerHTML = options[0];
+    choice2.innerHTML = options[1];
+    choice3.innerHTML = options[2];
+    
+    choice1.style = "position:absolute; top:400px; left:110px;border: 3px solid red";
+    choice2.style = "position:absolute; top:400px; left:300px;border: 3px solid green";
+    choice3.style = "position:absolute; top:400px; left:540px;border: 3px solid blue";
+    
+    choice1.classList.add("design");
+    choice2.classList.add("design");
+    choice3.classList.add("design");
+    
+    choices.append(screen);
+    choices.append(ch);
+    choices.append(choice1);
+    choices.append(choice2);
+    choices.append(choice3);
+    
+    function clearChoices() {
+        choices.removeChild(screen);
+        choices.removeChild(ch);
+        choices.removeChild(choice1);
+        choices.removeChild(choice2);
+        choices.removeChild(choice3);
+    }
+    
+    choice1.addEventListener("click", ()=>{
+        socket.emit("wordchose",{room:roomId,option:choice1.textContent,myname:myname})
+        console.log("ye shi answer hai ",choice1.textContent)
+        clearChoices()
+    });
+    choice2.addEventListener("click", ()=>{
+        socket.emit("wordchose",{room:roomId,option:choice2.textContent,myname:myname})
+        console.log("ye shi answer hai ",choice2.textContent)
+
+        clearChoices()
+    });
+    choice3.addEventListener("click", ()=>{
+        socket.emit("wordchose",{room:roomId,option:choice3.textContent,myname:myname})
+        clearChoices()
+    });
+
+}
+
+function someoneisdrawing(data){
+    if(a!=2){
+    var ch = document.createElement("span");
+    var screen = document.createElement("div");
+    
+    screen.style = "background:grey; width:800px;height:600px;margin-top:95px;position:relative;";
+    screen.innerHTML = "yoyo";
+    
+    ch.innerHTML = "Someone else is drawing";
+    ch.style = "position:absolute; top:300px; left:200px;font-size:40px;color:white;border: 4px solid yellow";
+    
+    choices.append(screen);
+    choices.append(ch);
+
+    // Optional: Remove the message after a delay
+    setTimeout(function() {
+        choices.removeChild(screen);
+        choices.removeChild(ch);
+    }, 3000);
+    
+}
+    a=0;
+}
+
+
+// someoneisdrawing()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var chat = document.getElementById("chat")
+
+var input = document.getElementById('msg');
+input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && input.value.trim()) { 
+        var usermsg=input.value
+        socket.emit("msg",{usermsg,room:roomId,myname})
+        input.value=""
+        usermsg=""
+    }
+    
+    
+});    
+// var pp=document.createElement("p")
+//     pp.style="margin: 0;padding: 5px; border-bottom: 1px solid #ddd;"
+//     pp.innerHTML="you can write here"
+//     chat.appendChild(pp)
+var swi=0
+socket.on("msg",(data)=>{
+    var p=document.createElement("p")
+    p.innerHTML=data
+    if(swi==0){
+        p.style="background-color:#ececec;margin: 0;padding: 5px; border-bottom: 1px solid #ddd; bottom:30px"
+        swi=1
+    }else{
+        p.style="margin: 0;padding: 5px; border-bottom: 1px solid #ddd; bottom:30px"
+        swi=0
+    }
+    chat.appendChild(p)
+})
+
+const nam = [
+    "Grace", "Hope", "Joy", "Faith", "Amber", "Jade", "Ruby", "Ivy", "Rose", "Pearl",
+    "Hunter", "Mason", "Parker", "Carter", "Sawyer", "Taylor", "Blake", "Reed", "Grant", "Chase",
+    "Emma", "Olivia", "Ava", "Isabella", "Sophia", "Charlotte", "Mia", "Amelia", "Harper", "Evelyn",
+    "Liam", "Noah", "William", "James", "Oliver", "Benjamin", "Elijah", "Lucas", "Mason", "Logan",
+    "Ethan", "Alexander", "Henry", "Jackson", "Sebastian", "Aiden", "Matthew", "Samuel", "David", "Joseph",
+    "Leo", "Julian", "Gabriel", "Anthony", "Isaac", "Lincoln", "Nathan", "Dylan", "Joshua", "Andrew",
+    "Caleb", "Ryan", "Asher", "Christian", "Thomas", "Hunter", "Cameron", "Eli", "Ezra", "Aaron",
+    "Landon", "Adrian", "Jonathan", "Nolan", "Jeremiah", "Easton", "Elias", "Colton", "Carter", "Robert",
+    "Grace", "Lily", "Sienna", "Violet", "Aurora", "Hazel", "Brooklyn", "Penelope", "Scarlett", "Claire"
+];
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var players=document.getElementById("players")
+
+// var myname="anonymous"
+if(myname.length>0&&myname!=null&&myname!=undefined){
+
+}else{
+    myname = nam[getRandomNumber(0,99)]
+}
+
+socket.emit("name",{myname,room:roomId})
+socket.on("name",(data)=>{
+    const userList = document.getElementById('userList');
+    userList.innerHTML = ''; // Clear the existing list
+    data.forEach(user => {
+        const userItem = document.createElement('p');
+        userItem.textContent = user;
+        userList.appendChild(userItem);
+    })
+    })
+    window.addEventListener('beforeunload', function () {
+            socket.emit('left', { room: roomId,myname});
+        });
+
+
+// recieveing choice words
+// socket.on("word",(data)=>{
+
+
+//     guessword.innerHTML=data.choice1+" "+data.choice2+" "+data.choice3
+// })
+// Assuming socket is already defined and connected
+var guessword = document.getElementById("guessword")
+var guesstext = document.getElementById("guesstext")
+var  a=0;
+socket.on("isdrawing",(data)=>{
+    a+=1;
+    someoneisdrawing(data)
+})
+socket.on("word", (data) => {
+    a+=1;
+    showChoices(data.options);
+});
+
+
+// Example usage
+// showPopup(['Alpha', 'Beta', 'Gamma']);
+
+socket.on("len",(data)=>{
+    guessword.textContent=""
+    for(var i=0;i<data;i++){
+        guessword.textContent+="_ "
+    }
+    guesstext.textContent="Guess this word:"
+})
+socket.on("directword",(data)=>{
+    guessword.textContent=data
+    guesstext.textContent="Draw this word:"
+})
+var time = document.getElementById("time")
+
+let interval;
+
+socket.on("Time", (data) => {
+    console.log("time event triggered");
+    console.log(data);
+
+    var Trec = data;
+    time.innerHTML = "Time:" + Trec;
+
+    // Clear any existing interval before starting a new one
+    if (interval) {
+        clearInterval(interval);
+    }
+
+    if (Trec > 0) {
+        interval = setInterval(() => {
+            Trec -= 1;
+            time.innerHTML = 'Time:' + Trec;
+            console.log("updating time");
+
+            if (Trec <= 0) {
+                clearInterval(interval); // Clear the interval when time runs out
+            }
+        }, 1000);
+    }
+});
+
+socket.on("sound",(data)=>{
+    if(data=="guessed"){
+        var audio = document.createElement("audio")
+        audio.src="/playerGuessed.ogg"
+        audio.play()
+    }
+    if(data=="join"){
+        var audio = document.createElement("audio")
+        audio.src="/join.ogg"
+        audio.play()
+    }
+    if(data=="left"){
+        var audio = document.createElement("audio")
+        audio.src="/leave.ogg"
+        audio.play()
+    }
+})
+// Example socket.emit for testing
+// socket.emit("word", { options: ['Option 1', 'Option 2', 'Option 3'] });
+
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body style="background-image: url('back.png');">
+    <div style="width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;">
+    <div style="background-image: url('skribbl.gif');    background-repeat: no-repeat; width: 470px; height: 100px; margin-top: 25px;"></div>
+    <div class="box" style="border: 0px solid #000; width: 400px; height: 250px; background-color: rgb(14, 50, 150); display: flex; flex-direction: column;align-items: center;">
+        <input id="input" type="text" placeholder="Write your name" style="width: 270px; height: 30px; margin-top: 10px; margin-left: 10px;border-radius: 8px;">
+        <!-- <button type="submit" id="play" style="background-color: rgb(31, 190, 31); width: 400px; height: 60px; font-size: 2em;border-radius: 6px; margin: 10px;">Play!</button> -->
+        <button  type="submit" id="create" style=" z-index: 10;background-color: yellow; width: 400px; height: 60px; font-size: 2em;border-radius: 6px; margin: 10px;" onclick="loadroom()">Create a room</button>
+    </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('input');
+  const texts = ["Write Your Name Here!!", "Rohan ", "Aditi ","Aarav ","Ananya "];
+  let textIndex = 0;
+  let charIndex = 0;
+  let isDeleting = false;
+  
+  function type() {
+    const currentText = texts[textIndex];
+    const displayedText = isDeleting
+      ? currentText.substring(0, charIndex--)
+      : currentText.substring(0, charIndex++);
+
+    input.setAttribute('placeholder', displayedText);
+
+    if (!isDeleting && charIndex === currentText.length) {
+      isDeleting = true;
+      setTimeout(type, 1000); // Pause before deleting
+    } else if (isDeleting && charIndex === 0) {
+      isDeleting = false;
+      textIndex = (textIndex + 1) % texts.length;
+      setTimeout(type, 500); // Pause before typing next text
+    } else {
+      setTimeout(type, isDeleting ? 50 : 100);
+    }
+  }
+
+  type();
+});
+    // const socket = io()
+document.getElementById("create").addEventListener('click',()=>{
+    if(input.value.trim()){
+        // socket.emit("name",{name,room:roomId})
+        console.log("trim")
+    }else{
+        // socket.emit("name",{none,room:roomId})
+        console.log("else")
+    }
+
+})
+
+//exchange first.ejs with index.ejs transfering name / doing this for interaction purpose of user with the page
+
+function loadroom(){
+
+    fetch('/get-room',
+      {
+        method:'GET',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        // body: JSON.stringify({exchangeData: input.value })
+      }
+    )
+    .then(response=>response.text())
+    .then(html =>{
+        document.body.innerHTML = html
+    })
+    .catch(error => console.error('Error:',error))
+
+
+
+
+}
+
+
+
+
+    </script>
+</body>
+</html>
